@@ -27,7 +27,7 @@
 
 import puppeteer from 'puppeteer-core';
 import { spawn } from 'child_process';
-import { writeFileSync, existsSync, mkdirSync, readFileSync, unlinkSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync, readFileSync, unlinkSync, chmodSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 
@@ -56,7 +56,7 @@ const AUTH_COOKIES = [
 function getOutputPath() {
   const dataDir = process.env.CLAUDE_PLUGIN_DATA;
   if (dataDir) {
-    if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+    if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true, mode: 0o700 });
     return join(dataDir, 'cookies.json');
   }
   return join(process.cwd(), '.cookies.json');
@@ -290,7 +290,9 @@ async function main() {
   // Step 5: Save cookies
   const cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
   const outputPath = getOutputPath();
-  writeFileSync(outputPath, JSON.stringify({ cookie_string: cookieString }, null, 2));
+  // Session cookies are credentials: owner read/write only.
+  writeFileSync(outputPath, JSON.stringify({ cookie_string: cookieString }, null, 2), { mode: 0o600 });
+  try { chmodSync(outputPath, 0o600); } catch {}
 
   const authPresent = AUTH_COOKIES.filter(name => cookies.find(c => c.name === name));
   console.log(`\n\u2713 Saved ${authPresent.length}/${AUTH_COOKIES.length} auth cookies to ${outputPath}`);

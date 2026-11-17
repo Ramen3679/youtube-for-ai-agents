@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { getVideoInfo } from '../lib/innertube.js';
 export const videoInfoInputSchema = {
-    videoId: z.string().describe('YouTube video ID'),
+    videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/, 'Invalid YouTube video ID').describe('YouTube video ID (11 characters)'),
     detail: z.enum(['brief', 'standard', 'full']).optional()
         .describe('Detail level — "brief" (key metadata only), "standard" (most fields, truncated description, no chapters), or "full" (everything). Default: standard'),
 };

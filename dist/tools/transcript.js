@@ -4,7 +4,7 @@ import { getVideoInfo } from '../lib/innertube.js';
 import { getConfig } from '../lib/user-config.js';
 import { DEFAULTS } from '../config.js';
 export const transcriptInputSchema = {
-    videoId: z.string().describe('YouTube video ID'),
+    videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/, 'Invalid YouTube video ID').describe('YouTube video ID (11 characters)'),
     language: z.string().optional()
         .describe(`Language code (default: "${DEFAULTS.transcript.defaultLanguage}")`),
     format: z.enum(['text', 'segments', 'both']).optional()

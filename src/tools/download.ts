@@ -4,7 +4,7 @@ import { getConfig } from '../lib/user-config.js';
 import type { DownloadQuality, DownloadType } from '../config.js';
 
 export const downloadInputSchema = {
-  videoId: z.string().describe('YouTube video ID'),
+  videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/, 'Invalid YouTube video ID').describe('YouTube video ID (11 characters)'),
   outputPath: z.string().optional()
     .describe('Output file path (defaults to <title>.<format> in current directory)'),
   quality: z.enum(['best', 'bestefficiency', '144p', '240p', '360p', '480p', '720p', '1080p', '1440p', '2160p']).optional()

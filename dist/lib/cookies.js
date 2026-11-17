@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, chmodSync } from 'fs';
 import { join, dirname } from 'path';
 import { DEFAULTS } from '../config.js';
 function getCookiePath() {
@@ -53,9 +53,14 @@ export function saveCookies(cookieString) {
     const cookiePath = getCookiePath();
     const dir = dirname(cookiePath);
     if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
+        mkdirSync(dir, { recursive: true, mode: 0o700 });
     }
-    writeFileSync(cookiePath, JSON.stringify({ cookie_string: cookieString }, null, 2));
+    // Session cookies are credentials: owner read/write only.
+    writeFileSync(cookiePath, JSON.stringify({ cookie_string: cookieString }, null, 2), { mode: 0o600 });
+    try {
+        chmodSync(cookiePath, 0o600);
+    }
+    catch { }
 }
 export function validateCookies(cookieString) {
     const cookieNames = cookieString
