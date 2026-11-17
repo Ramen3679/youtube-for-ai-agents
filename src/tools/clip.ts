@@ -4,7 +4,7 @@ import { getConfig } from '../lib/user-config.js';
 import type { DownloadQuality } from '../config.js';
 
 export const clipInputSchema = {
-  videoId: z.string().describe('YouTube video ID'),
+  videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/, 'Invalid YouTube video ID').describe('YouTube video ID (11 characters)'),
   clips: z.array(z.object({
     startTime: z.string().describe('Start timestamp — seconds ("90"), MM:SS ("1:30"), or HH:MM:SS ("1:30:00")'),
     endTime: z.string().describe('End timestamp — seconds ("225"), MM:SS ("3:45"), or HH:MM:SS ("1:30:00")'),

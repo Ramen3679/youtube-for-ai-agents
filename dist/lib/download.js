@@ -50,10 +50,18 @@ export function formatSeconds(seconds) {
 }
 function sanitizeFilename(name) {
     return name
-        .replace(/[<>:"/\\|?*]/g, '')
+        .replace(/[<>:"/\\|?*\x00-\x1f]/g, '')
         .replace(/\s+/g, ' ')
         .trim()
+        .replace(/^\.+/, '')
         .slice(0, 200);
+}
+const VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
+export function assertVideoId(videoId) {
+    if (!VIDEO_ID_PATTERN.test(videoId)) {
+        throw new Error(`Invalid YouTube video ID: "${videoId}". Expected 11 characters (letters, digits, "_" or "-").`);
+    }
+    return videoId;
 }
 export function formatFileSize(bytes) {
     if (bytes < 1024)
@@ -153,7 +161,7 @@ export async function downloadVideo(videoId, options = {}) {
     const type = options.type ?? config.download.defaultType;
     const format = options.format ?? config.download.defaultFormat;
     const ytdlp = getYtDlp();
-    const url = `https://www.youtube.com/watch?v=${videoId}`;
+    const url = `https://www.youtube.com/watch?v=${assertVideoId(videoId)}`;
     const info = await ytdlp.getInfoAsync(url);
     const title = info.title ?? 'video';
     const durationSeconds = info.duration ?? 0;
@@ -205,7 +213,7 @@ export async function downloadVideo(videoId, options = {}) {
 export async function downloadToTemp(videoId, quality = 'best', force = false) {
     const config = getConfig();
     const ytdlp = getYtDlp();
-    const url = `https://www.youtube.com/watch?v=${videoId}`;
+    const url = `https://www.youtube.com/watch?v=${assertVideoId(videoId)}`;
     const info = await ytdlp.getInfoAsync(url);
     const title = info.title ?? 'video';
     const durationSeconds = info.duration ?? 0;
@@ -260,7 +268,8 @@ export async function createClips(videoId, clips, options = {}) {
                 throw new Error(`Clip ${i + 1}: endTime (${clip.endTime}) exceeds video duration (${formatSeconds(durationSeconds)})`);
             }
             const label = clip.label ?? `clip${i + 1}`;
-            const outputFile = join(outputDir, `${safeName} - ${label}.mp4`);
+            const safeLabel = sanitizeFilename(label) || `clip${i + 1}`;
+            const outputFile = join(outputDir, `${safeName} - ${safeLabel}.mp4`);
             await clipVideo(tempPath, outputFile, startSec, endSec, options.accurate ?? false);
             const fileSize = formatFileSize(statSync(outputFile).size);
             const clipDuration = formatSeconds(endSec - startSec);
