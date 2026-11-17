@@ -1,0 +1,21 @@
+{
+  "name": "ramen-plugins",
+  "description": "Personal marketplace: reviewed and hardened fork of youtube-for-ai-agents",
+  "owner": {
+    "name": "Ramen3679",
+    "url": "https://github.com/Ramen3679"
+  },
+  "plugins": [
+    {
+      "name": "youtube",
+      "source": {
+        "source": "github",
+        "repo": "Ramen3679/youtube-for-ai-agents",
+        "ref": "main",
+        "sha": "91c866824d98e482f9432d6267f11b2ece9ae47b"
+      },
+      "description": "YouTube tools for Claude: search, transcripts, video info, channels, playlists, downloads and clips (hardened fork, pinned to a reviewed commit)",
+      "version": "0.2.0"
+    }
+  ]
+}
